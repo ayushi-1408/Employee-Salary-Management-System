@@ -1,0 +1,169 @@
+## Executive Summary
+
+ACME organization currently manages salary data for 10,000 employees across multiple countries via Excel spreadsheets. This web application replaces that manual process, enabling HR managers to efficiently view, search, filter, update, and analyze employee salary data through a modern, responsive interface backed by a production-grade backend API.
+
+---
+
+## Goal
+
+Enable HR managers to manage employee salary information via a centralized web application, replacing error-prone Excel-based processes and providing quick insights into organizational salary distribution by department and country.
+
+---
+
+## Scope & Core Features
+
+### In Scope (MVP)
+- **Employee Management (Core CRUD)**
+  - View all 10,000 employees with server-side pagination (50 records/page default)
+  - Search employees by name, email, or ID
+  - Filter by country, department, or role level
+  - View individual employee details including salary history
+  - Create new employee records
+  - Update employee information (name, email, country, department, role level)
+  - Update employee salary with immutable history (audit trail)
+  - Soft-delete employees (retain audit trail, mark as inactive)
+
+- **Analytics Dashboard**
+  - KPI summary cards: total employees, avg salary, median salary, salary range
+  - Salary distribution histogram (by salary bands)
+  - Salary by department (bar chart with avg/median)
+  - Salary by country (bar chart with avg/median)
+  - Employee count by role level
+
+- **Data Seeding**
+  - Seed 10,000 realistic synthetic employee records using Faker
+  - Distribution across 5 countries (US, UK, Germany, India, Japan)
+  - Distribution across 10 departments (Engineering, Sales, HR, Finance, Operations, Marketing, Legal, Procurement, Support, Executive)
+  - Distribution across 3 role levels (Junior, Senior, Manager)
+  - Realistic salary ranges by country, department, and role level
+
+---
+
+## Deliberately Out of Scope (MVP)
+
+| Feature | Reasoning |
+|---------|-----------|
+| **Role-Based Access Control (RBAC)** | Single HR Manager persona assumed for MVP; document as future production consideration |
+| **Authentication & Login** | Out of scope; assume implicitly authenticated HR manager; document as future feature |
+| **Bulk File Import (CSV/Excel)** | Seed script via Faker provides sufficient data population; document as optional stretch feature |
+| **Payroll Processing** | Complex tax/benefit calculations deferred to specialized payroll system |
+| **Bonus & Benefits Management** | Salary base only; benefits tracking is separate domain |
+| **Real-time Collaboration** | Single-user session assumed; concurrent editing not required |
+| **Advanced Salary Recommendations** | No ML-based insights for MVP; basic analytics only |
+| **Approval Workflows** | Salary changes applied immediately; workflow routing deferred to future |
+
+---
+
+## User Persona
+
+**HR Manager** at ACME org
+- Needs to quickly search and view employee salary information
+- Updates salaries periodically and needs audit trail of changes
+- Requires salary analytics to answer "how do we pay people across departments/countries?"
+- Works in a single-org, multi-country context
+- Primary goal: reduce Excel spreadsheet errors and improve data governance
+
+---
+
+## Technical Architecture
+
+### Backend
+- **Framework**: Spring Boot 3.x (Java)
+- **Database**: SQLite (file-based, single-file deployment)
+- **API**: RESTful with server-side pagination and filtering
+- **Data Population**: Spring Boot Faker seeder (runs on dev profile startup)
+- **Authentication**: None (MVP)
+
+### Frontend
+- **Framework**: Angular 18+ (TypeScript)
+- **State Management**: Angular Signals + Services pattern (modern, lightweight)
+- **Deployment**: Public URL (Vercel, Render, Railway, AWS) or Docker Compose
+
+### Data Model
+**Employees Table**
+- id, first_name, last_name, email, country, department, role_level, base_salary, currency, hire_date, is_active, created_at, updated_at
+
+**Salary History Table**
+- id, employee_id, old_salary, new_salary, change_reason, changed_date
+
+**No Auth/User Tables** (out of scope for MVP)
+
+---
+
+## Success Criteria
+
+- ✓ Backend Spring Boot API runs on localhost:8080
+- ✓ SQLite database seeded with 10,000 realistic employees
+- ✓ Frontend Angular app runs on localhost:4200
+- ✓ Pagination handles 10,000 records smoothly (<2s load time per page)
+- ✓ Search/filter functionality returns results in <1s
+- ✓ Salary update creates immutable history entry
+- ✓ Analytics dashboard renders without lag
+- ✓ Unit tests: Backend 65%+ coverage (service/repository layers), Frontend 55%+ coverage (services/components)
+- ✓ Public deployment OR Docker Compose + video demo (3-5 min)
+- ✓ Incremental commit history shows architectural evolution
+
+---
+
+## Key Design Decisions
+
+1. **Faker for Seeding**: Simplified alternative to bulk import UI; seeds realistic data at startup
+2. **SQLite over PostgreSQL**: File-based deployment, sufficient for 10K records, easier local dev/testing
+3. **No Auth MVP**: Focus on core salary management without auth complexity; add RBAC in Phase 2
+4. **Signals over NgRx**: Modern Angular pattern without over-engineering; sufficient for this scope
+5. **Server-side Pagination**: Efficient for 10K records; avoids client-side memory issues
+6. **Immutable Salary History**: Audit trail by design; changes logged, not overwritten
+7. **Soft Deletes**: Data retention for compliance; employees marked inactive, not removed
+
+---
+
+## Future Enhancements (Post-MVP)
+
+- Multi-user authentication (JWT/OAuth)
+- Role-based access control (Manager, Admin, Employee views)
+- Approval workflows for salary changes
+- Bulk CSV/Excel import UI
+- Salary benchmarking against market data
+- Advanced ML-based compensation insights
+- Export to payroll system integration
+
+---
+
+## Acceptance Criteria
+
+**Backend**
+1. `mvn clean install` succeeds
+2. Application starts: `java -jar target/salary-mgmt-*.jar`
+3. SQLite database created with 10,000 seeded employees
+4. REST endpoints respond with pagination/filtering:
+   - `GET /api/employees?page=0&size=50&country=US`
+   - `GET /api/employees/{id}`
+   - `GET /api/analytics/summary`
+5. Unit tests pass: `mvn test` (65%+ coverage)
+
+**Frontend**
+1. `ng build` succeeds
+2. Dev server runs: `ng serve`
+3. Can search 10K employees in <1s
+4. Can view employee detail and salary history
+5. Can edit employee salary (immutable history)
+6. Analytics dashboard displays charts
+7. Unit tests pass: `ng test --watch=false` (55%+ coverage)
+
+**Integration**
+1. Frontend connects to backend API
+2. Salary updates create audit trail
+3. 10K employee dataset handles pagination smoothly
+4. Public URL accessible or Docker setup ready
+
+---
+
+## Implementation Timeline
+
+| Phase | Duration | Deliverable |
+|-------|----------|-------------|
+| Requirements & Architecture | 1 day | This doc + data model diagram |
+| Backend Development | 3 days | Spring Boot API + Faker seeder + unit tests |
+| Frontend Development | 3 days | Angular components + analytics + unit tests |
+| Integration & Testing | 1 day | E2E workflows, performance validation |
+| Deployment & Documentation | 1 day | Public URL or Docker, video demo, README |
