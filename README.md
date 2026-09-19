@@ -1,6 +1,13 @@
 # Employee-Salary-Management-System
 # ACME Employee Salary Management
 
+
+https://github.com/user-attachments/assets/40548e94-e13a-42c9-af5d-90273426f05c
+
+
+
+
+
 A Spring Boot and Angular application for managing employee salary information.
 
 ## Technology
