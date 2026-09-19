@@ -1,169 +1,647 @@
-## Executive Summary
+# ACME Employee Salary Management
 
-ACME organization currently manages salary data for 10,000 employees across multiple countries via Excel spreadsheets. This web application replaces that manual process, enabling HR managers to efficiently view, search, filter, update, and analyze employee salary data through a modern, responsive interface backed by a production-grade backend API.
+A Spring Boot and Angular application for managing employee salary information.
 
----
+## Technology
 
-## Goal
+- Java 21
+- Spring Boot
+- Spring Data JPA
+- H2 file database
+- Angular
+- Angular Material
+- Docker Compose
 
-Enable HR managers to manage employee salary information via a centralized web application, replacing error-prone Excel-based processes and providing quick insights into organizational salary distribution by department and country.
+## Expected Project Structure
 
----
+The application source folders should eventually be placed like this:
 
-## Scope & Core Features
+```text
+acme/
+├── salary-api/       # Spring Boot backend
+├── acme_frontend/    # Angular frontend
+├── docker-compose.yml
+├── docs/
+└── README.md
+```
 
-### In Scope (MVP)
-- **Employee Management (Core CRUD)**
-  - View all 10,000 employees with server-side pagination (50 records/page default)
-  - Search employees by name, email, or ID
-  - Filter by country, department, or role level
-  - View individual employee details including salary history
-  - Create new employee records
-  - Update employee information (name, email, country, department, role level)
-  - Update employee salary with immutable history (audit trail)
-  - Soft-delete employees (retain audit trail, mark as inactive)
-
-- **Analytics Dashboard**
-  - KPI summary cards: total employees, avg salary, median salary, salary range
-  - Salary distribution histogram (by salary bands)
-  - Salary by department (bar chart with avg/median)
-  - Salary by country (bar chart with avg/median)
-  - Employee count by role level
-
-- **Data Seeding**
-  - Seed 10,000 realistic synthetic employee records using Faker
-  - Distribution across 5 countries (US, UK, Germany, India, Japan)
-  - Distribution across 10 departments (Engineering, Sales, HR, Finance, Operations, Marketing, Legal, Procurement, Support, Executive)
-  - Distribution across 3 role levels (Junior, Senior, Manager)
-  - Realistic salary ranges by country, department, and role level
+This README is currently stored in `/Users/TYAGIAY/README.md`. Copy it into the root of your `acme` project before uploading the project to GitHub.
 
 ---
 
-## Deliberately Out of Scope (MVP)
+## Prerequisites
 
-| Feature | Reasoning |
-|---------|-----------|
-| **Role-Based Access Control (RBAC)** | Single HR Manager persona assumed for MVP; document as future production consideration |
-| **Authentication & Login** | Out of scope; assume implicitly authenticated HR manager; document as future feature |
-| **Bulk File Import (CSV/Excel)** | Seed script via Faker provides sufficient data population; document as optional stretch feature |
-| **Payroll Processing** | Complex tax/benefit calculations deferred to specialized payroll system |
-| **Bonus & Benefits Management** | Salary base only; benefits tracking is separate domain |
-| **Real-time Collaboration** | Single-user session assumed; concurrent editing not required |
-| **Advanced Salary Recommendations** | No ML-based insights for MVP; basic analytics only |
-| **Approval Workflows** | Salary changes applied immediately; workflow routing deferred to future |
+Install:
 
----
+- Java 21
+- Maven or the Maven wrapper included by Spring Initializr
+- Node.js and npm
+- Angular CLI
+- Git
+- Docker Desktop, if using Docker Compose
+- IntelliJ IDEA for the backend
+- Visual Studio Code for the frontend
 
-## User Persona
+Check installed versions:
 
-**HR Manager** at ACME org
-- Needs to quickly search and view employee salary information
-- Updates salaries periodically and needs audit trail of changes
-- Requires salary analytics to answer "how do we pay people across departments/countries?"
-- Works in a single-org, multi-country context
-- Primary goal: reduce Excel spreadsheet errors and improve data governance
-
----
-
-## Technical Architecture
-
-### Backend
-- **Framework**: Spring Boot 3.x (Java)
-- **Database**: SQLite (file-based, single-file deployment)
-- **API**: RESTful with server-side pagination and filtering
-- **Data Population**: Spring Boot Faker seeder (runs on dev profile startup)
-- **Authentication**: None (MVP)
-
-### Frontend
-- **Framework**: Angular 18+ (TypeScript)
-- **State Management**: Angular Signals + Services pattern (modern, lightweight)
-- **Deployment**: Public URL (Vercel, Render, Railway, AWS) or Docker Compose
-
-### Data Model
-**Employees Table**
-- id, first_name, last_name, email, country, department, role_level, base_salary, currency, hire_date, is_active, created_at, updated_at
-
-**Salary History Table**
-- id, employee_id, old_salary, new_salary, change_reason, changed_date
-
-**No Auth/User Tables** (out of scope for MVP)
+```bash
+java -version
+mvn -version
+node -v
+npm -v
+ng version
+git --version
+docker --version
+```
 
 ---
 
-## Success Criteria
+# Local Development
 
-- ✓ Backend Spring Boot API runs on localhost:8080
-- ✓ SQLite database seeded with 10,000 realistic employees
-- ✓ Frontend Angular app runs on localhost:4200
-- ✓ Pagination handles 10,000 records smoothly (<2s load time per page)
-- ✓ Search/filter functionality returns results in <1s
-- ✓ Salary update creates immutable history entry
-- ✓ Analytics dashboard renders without lag
-- ✓ Unit tests: Backend 65%+ coverage (service/repository layers), Frontend 55%+ coverage (services/components)
-- ✓ Public deployment OR Docker Compose + video demo (3-5 min)
-- ✓ Incremental commit history shows architectural evolution
+Run the backend and frontend in separate terminal windows.
+
+## Start the Spring Boot Backend
+
+Open the backend folder in IntelliJ:
+
+```text
+salary-api
+```
+
+Run:
+
+```text
+src/main/java/com/acme/salary/SalaryApiApplication.java
+```
+
+The backend runs at:
+
+```text
+http://localhost:8080
+```
+
+The API base URL is:
+
+```text
+http://localhost:8080/api
+```
+
+Alternatively, run it from a terminal:
+
+```bash
+cd salary-api
+./mvnw spring-boot:run
+```
+
+If macOS reports a permission error:
+
+```bash
+chmod +x mvnw
+./mvnw spring-boot:run
+```
+
+## Start the Angular Frontend
+
+Open `acme_frontend` in Visual Studio Code:
+
+```bash
+cd acme_frontend
+npm install
+npm start
+```
+
+The frontend runs at:
+
+```text
+http://localhost:4200
+```
+
+Open this URL in a browser:
+
+```text
+http://localhost:4200
+```
 
 ---
 
-## Key Design Decisions
+# Angular Development Proxy
 
-1. **Faker for Seeding**: Simplified alternative to bulk import UI; seeds realistic data at startup
-2. **SQLite over PostgreSQL**: File-based deployment, sufficient for 10K records, easier local dev/testing
-3. **No Auth MVP**: Focus on core salary management without auth complexity; add RBAC in Phase 2
-4. **Signals over NgRx**: Modern Angular pattern without over-engineering; sufficient for this scope
-5. **Server-side Pagination**: Efficient for 10K records; avoids client-side memory issues
-6. **Immutable Salary History**: Audit trail by design; changes logged, not overwritten
-7. **Soft Deletes**: Data retention for compliance; employees marked inactive, not removed
+When Angular runs on port `4200` and Spring Boot runs on port `8080`, create this file:
+
+```text
+acme_frontend/proxy.conf.json
+```
+
+```json
+{
+  "/api": {
+    "target": "http://localhost:8080",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  }
+}
+```
+
+The `package.json` start script should be:
+
+```json
+{
+  "scripts": {
+    "start": "ng serve --proxy-config proxy.conf.json",
+    "build": "ng build",
+    "test": "ng test"
+  }
+}
+```
+
+The Angular environment file should contain:
+
+```text
+acme_frontend/src/environments/environment.ts
+```
+
+```typescript
+export const environment = {
+  production: false,
+  apiUrl: '/api'
+};
+```
+
+Angular sends this request:
+
+```text
+http://localhost:4200/api/employees
+```
+
+The proxy forwards it to:
+
+```text
+http://localhost:8080/api/employees
+```
+
+After changing the proxy configuration, restart Angular:
+
+```bash
+Ctrl + C
+npm start
+```
 
 ---
 
-## Future Enhancements (Post-MVP)
+# H2 Database
 
-- Multi-user authentication (JWT/OAuth)
-- Role-based access control (Manager, Admin, Employee views)
-- Approval workflows for salary changes
-- Bulk CSV/Excel import UI
-- Salary benchmarking against market data
-- Advanced ML-based compensation insights
-- Export to payroll system integration
+The local H2 configuration should be in:
+
+```text
+salary-api/src/main/resources/application.properties
+```
+
+```properties
+spring.application.name=salary-api
+
+server.port=8080
+
+spring.datasource.url=jdbc:h2:file:./data/salarydb
+spring.datasource.driver-class-name=org.h2.Driver
+spring.datasource.username=sa
+spring.datasource.password=
+
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=false
+spring.jpa.properties.hibernate.format_sql=true
+
+spring.h2.console.enabled=true
+spring.h2.console.path=/h2-console
+
+spring.data.web.pageable.default-page-size=25
+spring.data.web.pageable.max-page-size=100
+
+spring.jpa.properties.hibernate.jdbc.batch_size=500
+spring.jpa.properties.hibernate.order_inserts=true
+spring.jpa.properties.hibernate.order_updates=true
+
+seed.enabled=false
+seed.count=10000
+```
+
+The database files are stored in:
+
+```text
+salary-api/data/
+```
+
+This folder must be ignored by Git.
+
+## H2 Console
+
+Start the backend and open:
+
+```text
+http://localhost:8080/h2-console
+```
+
+Use:
+
+```text
+JDBC URL: jdbc:h2:file:./data/salarydb
+User Name: sa
+Password:
+```
+
+The password is empty for local development.
 
 ---
 
-## Acceptance Criteria
+# Seed Employee Data
 
-**Backend**
-1. `mvn clean install` succeeds
-2. Application starts: `java -jar target/salary-mgmt-*.jar`
-3. SQLite database created with 10,000 seeded employees
-4. REST endpoints respond with pagination/filtering:
-   - `GET /api/employees?page=0&size=50&country=US`
-   - `GET /api/employees/{id}`
-   - `GET /api/analytics/summary`
-5. Unit tests pass: `mvn test` (65%+ coverage)
+The seed runner creates deterministic synthetic employees directly in the database. CSV and Excel import are not required for this project.
 
-**Frontend**
-1. `ng build` succeeds
-2. Dev server runs: `ng serve`
-3. Can search 10K employees in <1s
-4. Can view employee detail and salary history
-5. Can edit employee salary (immutable history)
-6. Analytics dashboard displays charts
-7. Unit tests pass: `ng test --watch=false` (55%+ coverage)
+The seed creates:
 
-**Integration**
-1. Frontend connects to backend API
-2. Salary updates create audit trail
-3. 10K employee dataset handles pagination smoothly
-4. Public URL accessible or Docker setup ready
+- Employee names
+- Unique synthetic emails
+- Departments
+- Countries
+- Job titles
+- Hire dates
+- Salaries
+- Salary history
+
+## Seed 10 Employees Locally
+
+From the backend directory:
+
+```bash
+cd salary-api
+./mvnw spring-boot:run \
+  -Dspring-boot.run.arguments="--seed.enabled=true --seed.count=10"
+```
+
+After the seed finishes, stop the application with `Ctrl + C`, then start it normally:
+
+```bash
+./mvnw spring-boot:run
+```
+
+## Seed 10,000 Employees Locally
+
+```bash
+cd salary-api
+./mvnw spring-boot:run \
+  -Dspring-boot.run.arguments="--seed.enabled=true --seed.count=10000"
+```
+
+The seed runner should create only the missing records. For example, if one employee already exists and the target is 10, it creates nine more.
+
+## Verify the Seed
+
+```bash
+curl "http://localhost:8080/api/employees?page=0&size=25&sort=lastName,asc"
+```
+
+The response should contain:
+
+```json
+"totalElements": 10
+```
+
+For 10,000 records, it should contain:
+
+```json
+"totalElements": 10000
+```
+
+Check analytics:
+
+```bash
+curl http://localhost:8080/api/analytics/summary
+```
+
+The response should contain a matching `headcount`.
 
 ---
 
-## Implementation Timeline
+# API Endpoints
 
-| Phase | Duration | Deliverable |
-|-------|----------|-------------|
-| Requirements & Architecture | 1 day | This doc + data model diagram |
-| Backend Development | 3 days | Spring Boot API + Faker seeder + unit tests |
-| Frontend Development | 3 days | Angular components + analytics + unit tests |
-| Integration & Testing | 1 day | E2E workflows, performance validation |
-| Deployment & Documentation | 1 day | Public URL or Docker, video demo, README |
+## Employees
+
+```text
+GET    /api/employees
+GET    /api/employees/{id}
+POST   /api/employees
+PUT    /api/employees/{id}
+PUT    /api/employees/{id}/salary
+DELETE /api/employees/{id}
+```
+
+Example list request:
+
+```text
+/api/employees?page=0&size=25&sort=lastName,asc
+```
+
+Supported filters:
+
+```text
+search
+department
+country
+minSalary
+maxSalary
+```
+
+Example:
+
+```text
+/api/employees?page=0&size=25&search=alex&department=Engineering
+```
+
+## Analytics
+
+```text
+GET /api/analytics/summary
+GET /api/analytics/department
+GET /api/analytics/country
+GET /api/analytics/distribution?buckets=10
+```
+
+---
+
+# Docker Compose
+
+Docker Compose files:
+
+```text
+salary-api/Dockerfile
+salary-api/.dockerignore
+acme_frontend/Dockerfile
+acme_frontend/.dockerignore
+acme_frontend/nginx.conf
+docker-compose.yml
+```
+
+## Start Docker Compose
+
+Run from the root `acme` directory:
+
+```bash
+docker compose build
+docker compose up -d
+docker compose ps
+```
+
+The Docker frontend is available at:
+
+```text
+http://localhost
+```
+
+If the backend mapping is `8081:8080`, it is directly available at:
+
+```text
+http://localhost:8081
+```
+
+## View Logs
+
+```bash
+docker compose logs -f salary-api
+docker compose logs -f acme-frontend
+```
+
+## Stop Docker Compose
+
+```bash
+docker compose down
+```
+
+This preserves the named database volume.
+
+To remove the database and reset all data:
+
+```bash
+docker compose down -v
+```
+
+Use the `-v` command only when intentionally deleting the local database.
+
+## Seed Docker Data
+
+Stop the backend container:
+
+```bash
+docker compose stop salary-api
+```
+
+Run the seed inside Docker:
+
+```bash
+docker compose run --rm \
+  -e SPRING_SEED_ENABLED=true \
+  -e SPRING_SEED_COUNT=10000 \
+  salary-api
+```
+
+Start the application:
+
+```bash
+docker compose up -d
+```
+
+Verify:
+
+```bash
+curl http://localhost/api/analytics/summary
+```
+
+---
+
+# Tests
+
+## Backend Tests
+
+```bash
+cd salary-api
+./mvnw test
+```
+
+Build the backend:
+
+```bash
+./mvnw clean package
+```
+
+## Frontend Tests
+
+```bash
+cd acme_frontend
+npm test -- --watch=false --browsers=ChromeHeadless
+```
+
+Build the frontend:
+
+```bash
+npm run build
+```
+
+---
+
+# Common Problems
+
+## Port 8080 Is Already in Use
+
+Check the process:
+
+```bash
+lsof -nP -iTCP:8080 -sTCP:LISTEN
+```
+
+Stop the Spring Boot application in IntelliJ, or change the Docker host mapping:
+
+```yaml
+ports:
+  - "8081:8080"
+```
+
+## Angular Is Blank
+
+Check that `proxy.conf.json` exists and that `npm start` uses:
+
+```text
+ng serve --proxy-config proxy.conf.json
+```
+
+Restart Angular after changing proxy settings.
+
+## Postman Works but Angular Does Not
+
+For local development, use:
+
+```text
+Angular: http://localhost:4200
+Backend: http://localhost:8080
+```
+
+The Angular environment should use:
+
+```typescript
+apiUrl: '/api'
+```
+
+## API Returns HTML Instead of JSON
+
+If the response starts with `<!doctype html>`, Angular is not using the proxy. Restart Angular with:
+
+```bash
+npm start
+```
+
+## Docker Frontend Cannot Find Angular Build
+
+Run:
+
+```bash
+cd acme_frontend
+npm run build
+ls dist
+```
+
+Update the `COPY` path in `acme_frontend/Dockerfile` to match the generated Angular output folder.
+
+---
+
+# GitHub Upload
+
+Before committing, check the files:
+
+```bash
+git status
+```
+
+Do not commit:
+
+```text
+node_modules/
+target/
+data/
+dist/
+.env
+*.mv.db
+```
+
+Commit the project:
+
+```bash
+git add .
+git commit -m "feat: complete employee salary management application"
+```
+
+Add the GitHub repository:
+
+```bash
+git remote add origin YOUR_GITHUB_REPOSITORY_URL
+git branch -M main
+git push -u origin main
+```
+
+Never commit passwords, API keys, private keys, or real employee data.
+
+---
+
+# Demo Video
+
+The demo should be approximately 3–5 minutes and show:
+
+1. Dashboard KPI cards
+2. Salary charts
+3. Employee list
+4. Search
+5. Department and country filters
+6. Pagination
+7. Employee details
+8. Salary update
+9. Salary history
+10. Soft deletion
+11. Docker Compose startup
+12. Explanation of the main design decisions
+
+Add the video URL here:
+
+```markdown
+## Demo Video
+
+[Watch the project demo](PASTE_VIDEO_LINK_HERE)
+```
+
+---
+
+# Assessment Scope
+
+Included:
+
+- Employee CRUD
+- Salary updates
+- Salary history
+- Soft delete
+- Search
+- Filtering
+- Server-side pagination
+- Analytics
+- Deterministic seed data
+- Support for 10,000 synthetic employees
+- Docker Compose setup
+- Backend and frontend tests
+
+Deliberately excluded:
+
+- Authentication
+- Role-based access control
+- Payroll processing
+- Taxes
+- Bonuses
+- CSV import
+- Excel import
+- Live currency conversion
+
+Bulk file import is not required. The application uses a clean database seed runner to populate synthetic employee records, which satisfies the assessment requirement.
